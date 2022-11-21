@@ -3,18 +3,25 @@ from ..models import Receita
 from django.contrib.auth.models import User
 from django.contrib import auth, messages
 from usuarios.views import campo_vazio
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 # Create your views here.
 def index(request):
+    """Busca todas as receitas publicadas com paginação"""
     receitas= Receita.objects.order_by('-data_receita').filter(publicada=True)
+    paginator = Paginator(receitas, 3)
+    page = request.GET.get('page')
+    receitas_por_pagina = paginator.get_page(page)
 
     dados= {
-        'receitas': receitas
+        'receitas': receitas_por_pagina
     }
+
     return render(request, 'receitas/index.html', dados)
 
 def receita(request, receita_id):
+    """Busca uma receita pelo id"""
     receita = get_object_or_404(Receita, pk=receita_id)
 
     receita_a_exibir = {
@@ -24,6 +31,7 @@ def receita(request, receita_id):
     return render(request, 'receitas/receita.html', receita_a_exibir)
 
 def cria_receita(request):
+    """Cadastra uma receita"""
     if request.method == 'POST':
         nome_receita = request.POST['nome_receita']
         ingredientes = request.POST['ingredientes']
@@ -60,11 +68,13 @@ def cria_receita(request):
         return render(request, 'receitas/cria_receita.html')    
 
 def edita_receita(request, receita_id):
+    """Edita uma receita"""
     receita = get_object_or_404(Receita, pk=receita_id)    
     receita_a_editar = { 'receita':receita}
     return render(request, 'receitas/edita_receita.html', receita_a_editar)
 
 def atualiza_receita(request):
+    """Atualiza as informações da receita no banco de dados"""
     if request.method == 'POST':
         receita_id = request.POST['receita_id']
         r = Receita.objects.get(pk=receita_id)
@@ -80,6 +90,7 @@ def atualiza_receita(request):
         return redirect('dashboard')
 
 def deleta_receita(request, receita_id):
+    """Exclui uma receita"""
     receita = get_object_or_404(Receita, pk=receita_id)
     receita.delete()
     return redirect('dashboard')
