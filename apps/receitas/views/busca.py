@@ -2,6 +2,7 @@ from django.shortcuts import render
 from ..models import Receita
 
 def busca(request):
+    """Busca todas as receitas publicadas"""
     lista_receitas= Receita.objects.order_by('-data_receita').filter(publicada=True)
     
     if 'buscar' in request.GET:
